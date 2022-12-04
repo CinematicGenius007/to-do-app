@@ -11,7 +11,7 @@ function App() {
             <main>
                 <section className="py-16 px-8 text-center">
                     <h1>
-                        <span className="material-symbols-outlined text-9xl font-extralight">
+                        <span className="material-symbols-outlined text-8xl md:text-9xl font-extralight">
                             check_circle
                         </span>
                     </h1>
@@ -28,12 +28,12 @@ function App() {
                         You can visit the github repository here <i className="fal fa-long-arrow-right"></i>&nbsp;
                         <a href="https://github.com/CinematicGenius007/to-do-app" target="_blank" rel="noreferrer"><i className="fab fa-github"></i> <span className="font-black hover:underline underline-offset-4">todo.app</span></a>
                     </p>
-                    <h1 className="pt-24 flex justify-center items-center gap-16">
-                        <i className="fab fa-node text-9xl"></i>
-                        <span className="text-6xl">+</span>
-                        <i className="fad fa-database text-7xl"></i>
+                    <h1 className="pt-24 pb-12 flex justify-center items-center gap-10 md:gap-16">
+                        <i className="fab fa-node text-7xl md:text-9xl transition-[font-size] duration-500"></i>
+                        <span className="text-4xl md:text-6xl transition-[font-size] duration-500">+</span>
+                        <i className="fad fa-database text-5xl md:text-7xl transition-[font-size] duration-500"></i>
                     </h1>
-                    <h2 className="pt-4 text-7xl font-bold">todo.api</h2>
+                    <h2 className="pt-4 text-4xl md:text-6xl font-bold transition-[font-size] duration-500">todo.api</h2>
                     <p className="pt-8 mx-auto px-8 max-w-2xl text-xl">
                         We also have a nodejs backend for this app.
                         Which is also open source and can be found on github.
