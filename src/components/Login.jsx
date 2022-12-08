@@ -9,6 +9,24 @@ const Login = () => {
         userPassword: "",
     });
 
+    const validateEmail = (email) => {
+        const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if (emailRegex.test(email)) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    const validatePassword = (password) => {
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        if (passwordRegex.test(password)) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
     const [popup, setPopup] = useState({
         state: false,
         message: null,
@@ -23,7 +41,18 @@ const Login = () => {
 
     const formSubmit = (e) => {
         e.preventDefault();
-        axios.post('http://localhost:5000/api/users/login', formState)
+        if (!validateEmail(formState.userEmail)) {
+            setPopup({
+                state: true,
+                message: "Invalid email address"
+            });
+        } else if (!validatePassword(formState.userPassword)) {
+            setPopup({
+                state: true,
+                message: "Password must be at least 8 characters long and contain at least one letter and one number"
+            });
+        } else {
+            axios.post('http://localhost:5000/api/users/login', formState)
             .then((res) => {
                 if (res.data.token) {
                     document.cookie = `token=${res.data.token};SameSite=Strict;Secure`;
@@ -52,6 +81,7 @@ const Login = () => {
                     });
                 }
             });
+        }
     };
 
     useEffect(() => {
