@@ -1,14 +1,22 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const Signup = () => {
+    const navigate = useNavigate();
+
     const [formState, setFormState] = useState({
         userEmail: "",
         userPassword: "",
+        confirmPassword: "",
         name: ""
     });
 
+    const [popup, setPopup] = useState({
+        state: false,
+        message: null,
+    });
+    
     const handleChange = (e) => {
         setFormState({
             ...formState,
@@ -16,17 +24,88 @@ const Signup = () => {
         });
     };
 
+    const validateEmail = (email) => {
+        const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if (emailRegex.test(email)) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    const validatePassword = (password) => {
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        if (passwordRegex.test(password)) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
     const formSubmit = (e) => {
         e.preventDefault();
-        console.log(formState);
-        axios.post("http://localhost:5000/api/users/signup", formState)
-            .then(res => console.log(res))
-            .catch(err => console.log(err));
+        if (formState.userPassword !== formState.confirmPassword) {
+            setPopup({
+                state: true,
+                message: "Passwords do not match"
+            });
+        } else if (!validateEmail(formState.userEmail)) {
+            setPopup({
+                state: true,
+                message: "Invalid email address"
+            });
+        } else if (!validatePassword(formState.userPassword)) {
+            setPopup({
+                state: true,
+                message: "Password must be at least 8 characters long and contain at least one letter and one number"
+            });
+        } else {
+            axios.post("http://localhost:5000/api/users/signup", formState)
+                .then(res => {
+                    if (res.status === 201) {
+                        setFormState({
+                            userEmail: "",
+                            userPassword: "",
+                            confirmPassword: "",
+                            name: ""
+                        });
+                        navigate("/login");
+                    }
+                })
+                .catch(err => {
+                    if (err.response && err.response.status === 405) {
+                        setPopup({
+                            state: true,
+                            message: "Email already exists"
+                        });
+                    } else {
+                        setPopup({
+                            state: true,
+                            message: "Something went wrong"
+                        });
+                    }
+                });
+        }
     };
+
+    useEffect(() => {
+        let timeout = null;
+        if (popup.state === true) {
+            timeout = setTimeout(() => {
+                setPopup({
+                    state: false,
+                    message: null
+                });
+            }, 3000);
+        }
+        return () => {
+            clearTimeout(timeout);
+        };
+    }, [popup.state]);
 
     return (
         <div className="flex justify-center items-center p-8 min-h-screen w-full bg-dark">
-            <form onSubmit={formSubmit} autoComplete="off" className="flex flex-col items-start gap-8 py-6 px-8 bg-gray-dark-600 text-green-dark">
+            <form onSubmit={formSubmit} autoComplete="off" className="tilt flex flex-col items-start gap-8 py-6 px-8 bg-gray-dark-600 text-green-dark">
                 <Link to="/" className="text-orange-dark"><i className="fal fa-long-arrow-left"></i> <span className="hover:underline underline-offset-4">Go back</span></Link>
                 <h1 className="text-4xl font-black">Sign Up</h1>
                 <div className="pt-4">
@@ -36,12 +115,16 @@ const Signup = () => {
                     <input value={formState.userEmail} onChange={handleChange} name="userEmail" type="email" placeholder="Email*" autoComplete="new-password" required className="block py-1 px-3 w-96 bg-transparent rounded-lg outline-none border border-gray-light-100 focus:border-green-dark text-lg" />
                 </div>
                 <div>
-                    {/* <label className="block text-2xl">Name</label> */}
                     <input value={formState.userPassword} onChange={handleChange} name="userPassword" type="password" placeholder="Password*" autoComplete="new-password" required className="block py-1 px-3 w-96 bg-transparent rounded-lg outline-none border border-gray-light-100 focus:border-green-dark text-lg" />
                 </div>
+                <div>
+                    <input value={formState.confirmPassword} onChange={handleChange} name="confirmPassword" type="password" placeholder="Confirm Password*" autoComplete="new-password" required className="block py-1 px-3 w-96 bg-transparent rounded-lg outline-none border border-gray-light-100 focus:border-green-dark text-lg" />
+                </div>
+                {!popup.state ? null : <p className="max-w-xs text-red-dark">*{popup.message}*</p>}
                 <div className="flex gap-8 py-4">
                     <button className="py-2 px-4 rounded-lg bg-green-dark text-xl text-dark">signup</button>
                 </div>
+                
                 <Link to="/login" className="text-teal-dark">Already a user?</Link>
             </form>
         </div>

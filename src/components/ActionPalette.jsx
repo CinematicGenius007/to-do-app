@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 const ActionPalette = ({totalTasks, completedTasks}) => {
-    const [actionState, setActionState] = useState(true);
+    const [actionState, setActionState] = useState(false);
 
     useEffect(() => {}, [totalTasks, completedTasks]);
 

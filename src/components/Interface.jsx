@@ -2,8 +2,10 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import moment from "moment";
 import ActionPalette from "./ActionPalette";
+import { useNavigate } from "react-router-dom";
 
 const Interface = () => {
+    const navigate = useNavigate();
     const [newTask, setNewTask] = useState("");
     const [taskList, setTaskList] = useState([]);
     const [updateState, setUpdateState] = useState({
@@ -12,13 +14,28 @@ const Interface = () => {
         title: null,
     });
 
+    const [taskVisibility, setTaskVisibility] = useState({
+        pending: true,
+        completed: true,
+    });
+
     const refreshTaskList = () => {
-        axios.get('http://localhost:5000/api/tasks')
+        axios.get('http://localhost:5000/api/tasks', {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Authorization': 'Bearer ' + document.cookie.split('=')[1],
+            }
+        })
             .then((response) => {
                 console.log(response.data);
                 setTaskList(response.data);
             })
-            .catch((error) => {console.log(error)});
+            .catch((error) => {
+                console.log(error);
+                if (error.response.status === 401) {
+                    navigate("/login");
+                }
+            });
     };
 
     const addNewTask = () => {
@@ -26,13 +43,23 @@ const Interface = () => {
             axios.post('http://localhost:5000/api/tasks/create', {
                 title: newTask,
                 time_created: moment().format('YYYY-MM-DD HH:mm:ss'),
+            }, {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Authorization': 'Bearer ' + document.cookie.split('=')[1],
+                }
             })
                 .then((response) => {
                     console.log(response);
                     setNewTask("");
                     refreshTaskList();
                 })
-                .catch((error) => {console.log(error)});
+                .catch((error) => {
+                    console.log(error);
+                    if (error.response.status === 401) {
+                        navigate("/login");
+                    }
+                });
         }
     };
 
@@ -40,23 +67,44 @@ const Interface = () => {
         axios.post('http://localhost:5000/api/tasks/updateStatus', {
             task_id: id,
             status: status,
+        }, {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Authorization': 'Bearer ' + document.cookie.split('=')[1],
+            }
         })
             .then((response) => {
                 console.log(response);
                 refreshTaskList();
             })
-            .catch((error) => {console.log(error)});
+            .catch((error) => {
+                console.log(error);
+                if (error.response.status === 401) {
+                    navigate("/login");
+                }
+            });
     };
 
     const deleteTask = (id) => {
         axios.delete('http://localhost:5000/api/tasks/delete', {
-            data: {task_id: id}
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Authorization': 'Bearer ' + document.cookie.split('=')[1],
+            },
+            data: {
+                task_id: id
+            },
         })
             .then((response) => {
                 console.log(response);
                 refreshTaskList();
             })
-            .catch((error) => {console.log(error)});
+            .catch((error) => {
+                console.log(error);
+                if (error.response.status === 401) {
+                    navigate("/login");
+                }
+            });
     };
 
     const setUpUpdate = (id, title) => {
@@ -66,6 +114,7 @@ const Interface = () => {
             title: title,
         });
         setNewTask(title);
+        window.scrollTo(0, 0);
     };
 
     const updateTask = () => {
@@ -80,6 +129,11 @@ const Interface = () => {
             axios.put('http://localhost:5000/api/tasks/update', {
                 task_id: updateState.id,
                 title: newTask,
+            }, {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Authorization': 'Bearer ' + document.cookie.split('=')[1],
+                }
             })
                 .then((response) => {
                     console.log(response);
@@ -91,7 +145,12 @@ const Interface = () => {
                     });
                     refreshTaskList();
                 })
-                .catch((error) => {console.log(error)});
+                .catch((error) => {
+                    console.log(error);
+                    if (error.response.status === 401) {
+                        navigate("/login");
+                    }
+                });
         }
     };
 
@@ -116,71 +175,91 @@ const Interface = () => {
                 </div>
                 
                 <div className="my-6 mx-auto max-w-4xl text-teal-dark">
-                    <div className="py-2 px-3 flex justify-between w-full transition-colors duration-500">
+                    <button 
+                        className="py-2 px-3 flex justify-between items-center w-full rounded hover:bg-gray-dark-600 transition-colors duration-500"
+                        onClick={() => setTaskVisibility({...taskVisibility, pending: !taskVisibility.pending})}
+                    >
                         <h3 className="text-xl">Pending Tasks</h3>
-                        {/* <button></button> */}
-                    </div>
-                    {
-                        taskList.filter((task) => task.status === 0).sort((a, b) => a.time_created < b.time_created).map((task) => (
-                            <div key={task.task_id} className="flex flex-col gap-4 my-4">
-                                <div className="flex items-start gap-6 p-6 w-full bg-gray-dark-600">
-                                    <button onClick={() => changeTaskStatus(task.task_id)}>
-                                        <span className="material-symbols-outlined font-extralight">
-                                            radio_button_unchecked
-                                        </span>
-                                    </button>
-                                    <div className="flex-1">
-                                        <div className="mb-1">{task.title}</div>
-                                        <div className="text-xs text-gray-dark-200">{moment(task.time_created).format('h:m a, MMM d, YYYY')}</div>
+                        <span class="material-symbols-outlined text-3xl font-extralight">{taskVisibility.pending ? 'expand_less' : 'expand_more'}</span>
+                    </button>
+                    <div className={`${taskVisibility.pending ? 'max-h-max' : 'max-h-0'} overflow-hidden transition-[max-height] duration-1000`}>
+                        {
+                            taskList.filter((task) => task.status === 0).sort((a, b) => a.time_created < b.time_created).map((task) => (
+                                <div key={task.task_id} className="flex flex-col gap-4 my-4">
+                                    <div className="flex items-start gap-6 p-6 w-full bg-gray-dark-600">
+                                        <button onClick={() => changeTaskStatus(task.task_id)}>
+                                            <span className="material-symbols-outlined font-extralight">
+                                                radio_button_unchecked
+                                            </span>
+                                        </button>
+                                        <div className="flex-1">
+                                            <div className="mb-1">{task.title}</div>
+                                            <div className="text-xs text-gray-dark-200">{moment(task.time_created).format('h:m a, MMM D, YYYY')}</div>
+                                        </div>
+                                        <button onClick={() => setUpUpdate(task.task_id, task.title)}>
+                                            <span className="material-symbols-outlined p-2 h-10 w-10 hover:bg-dark transition-colors duration-500 rounded-full text-yellow-dark font-extralight">
+                                                edit
+                                            </span>
+                                        </button>
+                                        <button onClick={() => deleteTask(task.task_id)}>
+                                            <span className="material-symbols-outlined p-2 h-10 w-10 hover:bg-dark transition-colors duration-500 rounded-full text-red-dark font-extralight">
+                                                delete
+                                            </span>
+                                        </button>
                                     </div>
-                                    <button onClick={() => setUpUpdate(task.task_id, task.title)}>
-                                        <span className="material-symbols-outlined p-2 h-10 w-10 hover:bg-dark transition-colors duration-500 rounded-full text-yellow-dark font-extralight">
-                                            edit
-                                        </span>
-                                    </button>
-                                    <button onClick={() => deleteTask(task.task_id)}>
-                                        <span className="material-symbols-outlined p-2 h-10 w-10 hover:bg-dark transition-colors duration-500 rounded-full text-red-dark font-extralight">
-                                            delete
-                                        </span>
-                                    </button>
                                 </div>
-                            </div>
-                        ))
-                    }
+                            ))
+                        }
+                        {
+                            taskList.filter((task) => task.status === 0).length === 0 && (
+                                <div className="flex justify-center items-center gap-4 mt-8 mb-4 text-teal-dark/70">No pending task for you!</div>
+                            )
+                        }
+                    </div>
                 </div>
 
                 <div className="mt-12 mb-6 mx-auto max-w-4xl text-green-dark">
-                    <div className="py-2 px-3 flex justify-between w-full transition-colors duration-500">
+                    <button 
+                        className="py-2 px-3 flex justify-between items-center w-full rounded hover:bg-gray-dark-600 transition-colors duration-500"
+                        onClick={() => setTaskVisibility({...taskVisibility, completed: !taskVisibility.completed})}
+                    >
                         <h3 className="text-xl">Finished Tasks</h3>
-                        {/* <button></button> */}
-                    </div>
-                    {
-                        taskList.filter((task) => task.status === 1).sort((a, b) => a.time_created > b.time_created).map((task) => (
-                            <div key={task.task_id} className="flex flex-col gap-4 my-4">
-                                <div className="flex items-start gap-6 p-6 w-full bg-gray-dark-600">
-                                    <button onClick={() => changeTaskStatus(task.task_id, 0)}>
-                                        <span className="material-symbols-outlined font-extralight">
-                                            check_circle
-                                        </span>
-                                    </button>
-                                    <div className="flex-1">
-                                        <div className="mb-1">{task.title}</div>
-                                        <div className="text-xs text-gray-dark-200">{moment(task.time_created).format('h:m a, MMM d, YYYY')}</div>
+                        <span class="material-symbols-outlined text-3xl font-extralight">{taskVisibility.completed ? 'expand_less' : 'expand_more'}</span>
+                    </button>
+                    <div className={`${taskVisibility.completed ? 'max-h-max' : 'max-h-0'} overflow-hidden transition-[max-height] duration-1000`}>
+                        {
+                            taskList.filter((task) => task.status === 1).sort((a, b) => a.time_created > b.time_created).reverse().map((task) => (
+                                <div key={task.task_id} className="flex flex-col gap-4 my-4">
+                                    <div className="flex items-start gap-6 p-6 w-full bg-gray-dark-600">
+                                        <button onClick={() => changeTaskStatus(task.task_id, 0)}>
+                                            <span className="material-symbols-outlined font-extralight">
+                                                check_circle
+                                            </span>
+                                        </button>
+                                        <div className="flex-1">
+                                            <div className="mb-1 line-through">{task.title}</div>
+                                            <div className="text-xs text-gray-dark-200">{moment(task.time_created).format('h:m a, MMM D, YYYY')}</div>
+                                        </div>
+                                        <button onClick={() => setUpUpdate(task.task_id, task.title)}>
+                                            <span className="material-symbols-outlined p-2 h-10 w-10 hover:bg-dark transition-colors duration-500 rounded-full text-yellow-dark font-extralight">
+                                                edit
+                                            </span>
+                                        </button>
+                                        <button onClick={() => deleteTask(task.task_id)}>
+                                            <span className="material-symbols-outlined p-2 h-10 w-10 hover:bg-dark transition-colors duration-500 rounded-full text-red-dark font-extralight">
+                                                delete
+                                            </span>
+                                        </button>
                                     </div>
-                                    <button onClick={() => setUpUpdate(task.task_id, task.title)}>
-                                        <span className="material-symbols-outlined p-2 h-10 w-10 hover:bg-dark transition-colors duration-500 rounded-full text-yellow-dark font-extralight">
-                                            edit
-                                        </span>
-                                    </button>
-                                    <button onClick={() => deleteTask(task.task_id)}>
-                                        <span className="material-symbols-outlined p-2 h-10 w-10 hover:bg-dark transition-colors duration-500 rounded-full text-red-dark font-extralight">
-                                            delete
-                                        </span>
-                                    </button>
                                 </div>
-                            </div>
-                        ))
-                    }
+                            ))
+                        }
+                        {
+                            taskList.filter((task) => task.status === 1).length === 0 && (
+                                <div className="flex justify-center items-center gap-4 mt-8 mb-4 text-green-dark/70">No finished task for you!</div>
+                            )
+                        }
+                    </div>
                 </div>
             </section>
         </div>
