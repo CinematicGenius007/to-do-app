@@ -156,7 +156,9 @@ const Interface = () => {
 
     useEffect(() => {
         refreshTaskList();
-    }, [taskList]);
+    }, []);
+    
+    useEffect(() => {}, [taskList]);
 
     return (
         <div className="flex relative min-h-screen w-full bg-dark">
