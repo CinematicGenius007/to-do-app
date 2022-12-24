@@ -20,7 +20,7 @@ const Interface = () => {
     });
 
     const refreshTaskList = () => {
-        axios.get('http://localhost:5000/api/tasks', {
+        axios.get('http://ec2-18-212-192-194.compute-1.amazonaws.com/api/tasks', {
             headers: {
                 'Access-Control-Allow-Origin': '*',
                 'Authorization': 'Bearer ' + document.cookie.split('=')[1],
@@ -40,7 +40,7 @@ const Interface = () => {
 
     const addNewTask = () => {
         if (newTask !== "") {
-            axios.post('http://localhost:5000/api/tasks/create', {
+            axios.post('http://ec2-18-212-192-194.compute-1.amazonaws.com/api/tasks/create', {
                 title: newTask,
                 time_created: moment().format('YYYY-MM-DD HH:mm:ss'),
             }, {
@@ -64,7 +64,7 @@ const Interface = () => {
     };
 
     const changeTaskStatus = (id, status = 1) => {
-        axios.post('http://localhost:5000/api/tasks/updateStatus', {
+        axios.post('http://ec2-18-212-192-194.compute-1.amazonaws.com/api/tasks/updateStatus', {
             task_id: id,
             status: status,
         }, {
@@ -86,7 +86,7 @@ const Interface = () => {
     };
 
     const deleteTask = (id) => {
-        axios.delete('http://localhost:5000/api/tasks/delete', {
+        axios.delete('http://ec2-18-212-192-194.compute-1.amazonaws.com/api/tasks/delete', {
             headers: {
                 'Access-Control-Allow-Origin': '*',
                 'Authorization': 'Bearer ' + document.cookie.split('=')[1],
@@ -126,7 +126,7 @@ const Interface = () => {
                 title: null,
             });
         } else if (newTask !== "") {
-            axios.put('http://localhost:5000/api/tasks/update', {
+            axios.put('http://ec2-18-212-192-194.compute-1.amazonaws.com/api/tasks/update', {
                 task_id: updateState.id,
                 title: newTask,
             }, {
