@@ -182,7 +182,7 @@ const Interface = () => {
                         onClick={() => setTaskVisibility({...taskVisibility, pending: !taskVisibility.pending})}
                     >
                         <h3 className="text-xl">Pending Tasks</h3>
-                        <span class="material-symbols-outlined text-3xl font-extralight">{taskVisibility.pending ? 'expand_less' : 'expand_more'}</span>
+                        <span className="material-symbols-outlined text-3xl font-extralight">{taskVisibility.pending ? 'expand_less' : 'expand_more'}</span>
                     </button>
                     <div className={`${taskVisibility.pending ? 'max-h-max' : 'max-h-0'} overflow-hidden transition-[max-height] duration-1000`}>
                         {
@@ -226,7 +226,7 @@ const Interface = () => {
                         onClick={() => setTaskVisibility({...taskVisibility, completed: !taskVisibility.completed})}
                     >
                         <h3 className="text-xl">Finished Tasks</h3>
-                        <span class="material-symbols-outlined text-3xl font-extralight">{taskVisibility.completed ? 'expand_less' : 'expand_more'}</span>
+                        <span className="material-symbols-outlined text-3xl font-extralight">{taskVisibility.completed ? 'expand_less' : 'expand_more'}</span>
                     </button>
                     <div className={`${taskVisibility.completed ? 'max-h-max' : 'max-h-0'} overflow-hidden transition-[max-height] duration-1000`}>
                         {
