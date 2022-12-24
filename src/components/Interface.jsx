@@ -20,7 +20,7 @@ const Interface = () => {
     });
 
     const refreshTaskList = () => {
-        axios.get(`{process.env.REACT_APP_BACKEND_URL}api/tasks`, {
+        axios.get(`${process.env.REACT_APP_BACKEND_URL}api/tasks`, {
             headers: {
                 'Access-Control-Allow-Origin': '*',
                 'Authorization': 'Bearer ' + document.cookie.split('=')[1],
@@ -40,7 +40,7 @@ const Interface = () => {
 
     const addNewTask = () => {
         if (newTask !== "") {
-            axios.post(`{process.env.REACT_APP_BACKEND_URL}api/tasks/create`, {
+            axios.post(`${process.env.REACT_APP_BACKEND_URL}api/tasks/create`, {
                 title: newTask,
                 time_created: moment().format('YYYY-MM-DD HH:mm:ss'),
             }, {
@@ -64,7 +64,7 @@ const Interface = () => {
     };
 
     const changeTaskStatus = (id, status = 1) => {
-        axios.post(`{process.env.REACT_APP_BACKEND_URL}api/tasks/updateStatus`, {
+        axios.post(`${process.env.REACT_APP_BACKEND_URL}api/tasks/updateStatus`, {
             task_id: id,
             status: status,
         }, {
@@ -86,7 +86,7 @@ const Interface = () => {
     };
 
     const deleteTask = (id) => {
-        axios.delete(`{process.env.REACT_APP_BACKEND_URL}api/tasks/delete`, {
+        axios.delete(`${process.env.REACT_APP_BACKEND_URL}api/tasks/delete`, {
             headers: {
                 'Access-Control-Allow-Origin': '*',
                 'Authorization': 'Bearer ' + document.cookie.split('=')[1],
@@ -126,7 +126,7 @@ const Interface = () => {
                 title: null,
             });
         } else if (newTask !== "") {
-            axios.put(`{process.env.REACT_APP_BACKEND_URL}api/tasks/update`, {
+            axios.put(`${process.env.REACT_APP_BACKEND_URL}api/tasks/update`, {
                 task_id: updateState.id,
                 title: newTask,
             }, {
