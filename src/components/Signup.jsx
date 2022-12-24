@@ -60,7 +60,7 @@ const Signup = () => {
                 message: "Password must be at least 8 characters long and contain at least one letter and one number"
             });
         } else {
-            axios.post("http://ec2-18-212-192-194.compute-1.amazonaws.com/api/users/signup", formState)
+            axios.post(`${process.env.REACT_APP_BACKEND_URL}api/users/signup`, formState)
                 .then(res => {
                     if (res.status === 201) {
                         setFormState({
