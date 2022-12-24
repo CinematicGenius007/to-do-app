@@ -19,11 +19,26 @@ const Interface = () => {
         completed: true,
     });
 
+    const getJwtToken = () => {
+        if (document.cookie.split('=')[1] === undefined) {
+            navigate("/login");
+        } else if (document.cookie.split('=')[0] !== "token") {
+            let cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                if (cookies[i].split('=')[0] === "token") {
+                    return cookies[i].split('=')[1];
+                }
+            }
+        } else {
+            return document.cookie.split('=')[1];
+        }
+    }
+
     const refreshTaskList = () => {
         axios.get(`${process.env.REACT_APP_BACKEND_URL}api/tasks`, {
             headers: {
                 'Access-Control-Allow-Origin': '*',
-                'Authorization': 'Bearer ' + document.cookie.split('=')[1],
+                'Authorization': 'Bearer ' + getJwtToken(),
             }
         })
             .then((response) => {
@@ -46,11 +61,11 @@ const Interface = () => {
             }, {
                 headers: {
                     'Access-Control-Allow-Origin': '*',
-                    'Authorization': 'Bearer ' + document.cookie.split('=')[1],
+                    'Authorization': 'Bearer ' + getJwtToken(),
                 }
             })
                 .then((response) => {
-                    console.log(response);
+                    // console.log(response);
                     setNewTask("");
                     refreshTaskList();
                 })
@@ -65,16 +80,16 @@ const Interface = () => {
 
     const changeTaskStatus = (id, status = 1) => {
         axios.post(`${process.env.REACT_APP_BACKEND_URL}api/tasks/updateStatus`, {
-            task_id: id,
+            id: id,
             status: status,
         }, {
             headers: {
                 'Access-Control-Allow-Origin': '*',
-                'Authorization': 'Bearer ' + document.cookie.split('=')[1],
+                'Authorization': 'Bearer ' + getJwtToken(),
             }
         })
             .then((response) => {
-                console.log(response);
+                // console.log(response);
                 refreshTaskList();
             })
             .catch((error) => {
@@ -89,14 +104,14 @@ const Interface = () => {
         axios.delete(`${process.env.REACT_APP_BACKEND_URL}api/tasks/delete`, {
             headers: {
                 'Access-Control-Allow-Origin': '*',
-                'Authorization': 'Bearer ' + document.cookie.split('=')[1],
+                'Authorization': 'Bearer ' + getJwtToken(),
             },
             data: {
-                task_id: id
+                id: id
             },
         })
             .then((response) => {
-                console.log(response);
+                // console.log(response);
                 refreshTaskList();
             })
             .catch((error) => {
@@ -127,16 +142,16 @@ const Interface = () => {
             });
         } else if (newTask !== "") {
             axios.put(`${process.env.REACT_APP_BACKEND_URL}api/tasks/update`, {
-                task_id: updateState.id,
+                id: updateState.id,
                 title: newTask,
             }, {
                 headers: {
                     'Access-Control-Allow-Origin': '*',
-                    'Authorization': 'Bearer ' + document.cookie.split('=')[1],
+                    'Authorization': 'Bearer ' + getJwtToken(),
                 }
             })
                 .then((response) => {
-                    console.log(response);
+                    // console.log(response);
                     setNewTask("");
                     setUpdateState({
                         update: false,
@@ -156,6 +171,7 @@ const Interface = () => {
 
     useEffect(() => {
         refreshTaskList();
+	// eslint-disable-next-line
     }, []);
     
     useEffect(() => {}, [taskList]);
@@ -186,10 +202,10 @@ const Interface = () => {
                     </button>
                     <div className={`${taskVisibility.pending ? 'max-h-max' : 'max-h-0'} overflow-hidden transition-[max-height] duration-1000`}>
                         {
-                            taskList.filter((task) => task.status === 0).sort((a, b) => a.time_created < b.time_created).map((task) => (
-                                <div key={task.task_id} className="flex flex-col gap-4 my-4">
+                            taskList.filter((task) => task.status === 0).sort((a, b) => a.time_created < b.time_created).map((task, index) => (
+                                <div key={task.id} className="flex flex-col gap-4 my-4">
                                     <div className="flex items-start gap-6 p-6 w-full bg-gray-dark-600">
-                                        <button onClick={() => changeTaskStatus(task.task_id)}>
+                                        <button onClick={() => changeTaskStatus(task.id)}>
                                             <span className="material-symbols-outlined font-extralight">
                                                 radio_button_unchecked
                                             </span>
@@ -198,12 +214,12 @@ const Interface = () => {
                                             <div className="mb-1">{task.title}</div>
                                             <div className="text-xs text-gray-dark-200">{moment(task.time_created).format('h:m a, MMM D, YYYY')}</div>
                                         </div>
-                                        <button onClick={() => setUpUpdate(task.task_id, task.title)}>
+                                        <button onClick={() => setUpUpdate(task.id, task.title)}>
                                             <span className="material-symbols-outlined p-2 h-10 w-10 hover:bg-dark transition-colors duration-500 rounded-full text-yellow-dark font-extralight">
                                                 edit
                                             </span>
                                         </button>
-                                        <button onClick={() => deleteTask(task.task_id)}>
+                                        <button onClick={() => deleteTask(task.id)}>
                                             <span className="material-symbols-outlined p-2 h-10 w-10 hover:bg-dark transition-colors duration-500 rounded-full text-red-dark font-extralight">
                                                 delete
                                             </span>
@@ -231,9 +247,9 @@ const Interface = () => {
                     <div className={`${taskVisibility.completed ? 'max-h-max' : 'max-h-0'} overflow-hidden transition-[max-height] duration-1000`}>
                         {
                             taskList.filter((task) => task.status === 1).sort((a, b) => a.time_created > b.time_created).reverse().map((task) => (
-                                <div key={task.task_id} className="flex flex-col gap-4 my-4">
+                                <div key={task.id} className="flex flex-col gap-4 my-4">
                                     <div className="flex items-start gap-6 p-6 w-full bg-gray-dark-600">
-                                        <button onClick={() => changeTaskStatus(task.task_id, 0)}>
+                                        <button onClick={() => changeTaskStatus(task.id, 0)}>
                                             <span className="material-symbols-outlined font-extralight">
                                                 check_circle
                                             </span>
@@ -242,12 +258,12 @@ const Interface = () => {
                                             <div className="mb-1 line-through">{task.title}</div>
                                             <div className="text-xs text-gray-dark-200">{moment(task.time_created).format('h:m a, MMM D, YYYY')}</div>
                                         </div>
-                                        <button onClick={() => setUpUpdate(task.task_id, task.title)}>
+                                        <button onClick={() => setUpUpdate(task.id, task.title)}>
                                             <span className="material-symbols-outlined p-2 h-10 w-10 hover:bg-dark transition-colors duration-500 rounded-full text-yellow-dark font-extralight">
                                                 edit
                                             </span>
                                         </button>
-                                        <button onClick={() => deleteTask(task.task_id)}>
+                                        <button onClick={() => deleteTask(task.id)}>
                                             <span className="material-symbols-outlined p-2 h-10 w-10 hover:bg-dark transition-colors duration-500 rounded-full text-red-dark font-extralight">
                                                 delete
                                             </span>
